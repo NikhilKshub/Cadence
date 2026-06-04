@@ -1,0 +1,67 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-config-schema/schema.json",
+  "productName": "Cadence",
+  "version": "1.0.0",
+  "identifier": "com.cadence.player",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "vite",
+    "beforeBuildCommand": "tsc && vite build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Cadence",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false,
+        "label": "main"
+      }
+    ],
+    "security": {
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$APPDATA/**", "$AUDIO/**", "$APPCACHE/**"]
+      },
+      "csp": "default-src 'self' asset: https://asset.localhost; script-src 'self'; style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://api.fontshare.com https://fonts.gstatic.com; img-src 'self' data: asset: https://asset.localhost blob: https:; media-src 'self' asset: https://asset.localhost blob:; connect-src 'self' https://lrclib.net https://itunes.apple.com https://musicbrainz.org https://ws.audioscrobbler.com https://coverartarchive.org https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com;"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "PLACEHOLDER_PUBLIC_KEY",
+      "endpoints": [
+        "https://github.com/YOUR_USERNAME/cadence/releases/latest/download/latest.json"
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "wix": {
+        "language": "en-US"
+      }
+    },
+    "publisher": "Your Name Here",
+    "copyright": "Copyright 2025 Cadence",
+    "category": "Music",
+    "shortDescription": "A premium desktop music player",
+    "longDescription": "Cadence is a premium offline music player for Windows with lyrics, Last.fm scrobbling, Discord presence and beautiful design."
+  }
+}
