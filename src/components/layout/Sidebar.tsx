@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { House, Music2, Disc3, Mic2, ListMusic, Radio, Moon, Settings2, Music, Play, Pause } from 'lucide-react';
+import { House, Music2, Disc3, Mic2, ListMusic, Radio, Moon, Settings2, Play, Pause } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useLibraryStore } from '../../store/libraryStore';

@@ -27,7 +27,15 @@
     "security": {
       "assetProtocol": {
         "enable": true,
-        "scope": ["$APPDATA/**", "$AUDIO/**", "$APPCACHE/**"]
+        "scope": [
+          "$APPDATA/**",
+          "$AUDIO/**",
+          "$DOCUMENT/**",
+          "$DOWNLOAD/**",
+          "$MUSIC/**",
+          "$DESKTOP/**",
+          "$HOME/**"
+        ]
       },
       "csp": "default-src 'self' asset: https://asset.localhost; script-src 'self'; style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://api.fontshare.com https://fonts.gstatic.com; img-src 'self' data: asset: https://asset.localhost blob: https:; media-src 'self' asset: https://asset.localhost blob:; connect-src 'self' https://lrclib.net https://itunes.apple.com https://musicbrainz.org https://ws.audioscrobbler.com https://coverartarchive.org https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com;"
     }

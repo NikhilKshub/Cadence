@@ -35,12 +35,11 @@ pub fn run() {
                 // I will add a window.hide() and window.show() as a common hack to clear the Windows composition cache, but let's just stick with the shadow fix since that is the root cause of the "fold".
             }
 
-            // Initialize database synchronously before anything else
-            let app_handle = app.handle().clone();
+            let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
-                if let Err(e) = database::initialize_database(&app_handle).await {
-                    eprintln!("Database init failed: {}", e);
-                    log::error!("Database init failed: {}", e);
+                match database::initialize_database(&handle).await {
+                    Ok(_) => println!("Database initialized"),
+                    Err(e) => eprintln!("DB error: {}", e),
                 }
             });
             

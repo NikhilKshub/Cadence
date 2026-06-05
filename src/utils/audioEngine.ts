@@ -1,50 +1,19 @@
 // Cadence — Audio Engine Class
-// Manages audio playback using native HTML5 Audio for maximum compatibility in Tauri
+// Manages audio playback using Howler
 
+import { Howl } from 'howler';
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import { usePlayerStore } from '../store/playerStore';
 import { useLibraryStore } from '../store/libraryStore';
 
 export class AudioEngine {
-  private audio: HTMLAudioElement | null = null;
+  private howler: Howl | null = null;
   private currentFilePath: string | null = null;
   private progressInterval: ReturnType<typeof setInterval> | null = null;
   private elapsedSeconds: number = 0;
 
-  constructor() {
-    this.audio = new Audio();
-    this.audio.autoplay = false;
+  constructor() {}
 
-    // Attach native event listeners
-    this.audio.addEventListener('loadedmetadata', () => {
-      if (this.audio) {
-        usePlayerStore.setState({ duration: this.audio.duration });
-      }
-    });
-
-    this.audio.addEventListener('play', () => {
-      usePlayerStore.setState({ isPlaying: true, isPaused: false });
-      this.startProgressTracking();
-    });
-
-    this.audio.addEventListener('pause', () => {
-      usePlayerStore.setState({ isPaused: true, isPlaying: false });
-    });
-
-    this.audio.addEventListener('ended', () => {
-      this.handleTrackEnd();
-    });
-
-    this.audio.addEventListener('error', (e) => {
-      console.error('HTMLAudioElement error:', e);
-      usePlayerStore.setState({ isPlaying: false });
-    });
-  }
-
-  /**
-   * Loads an audio file path into the native audio element.
-   * Converts path to Tauri asset src before loading.
-   */
   public load(filePath: string, autoPlay: boolean = false): void {
     if (this.currentFilePath && this.elapsedSeconds > 10) {
       const currentSong = usePlayerStore.getState().currentSong;
@@ -57,8 +26,8 @@ export class AudioEngine {
       }
     }
 
-    if (this.audio) {
-      this.audio.pause();
+    if (this.howler) {
+      this.howler.unload();
       this.stopProgressTracking();
     }
 
@@ -66,132 +35,116 @@ export class AudioEngine {
     this.currentFilePath = filePath;
 
     const assetUrl = convertFileSrc(filePath);
-    console.error('Loading audio with native Audio:', assetUrl);
-
-    if (this.audio) {
-      this.audio.src = assetUrl;
-      this.audio.volume = usePlayerStore.getState().volume;
-      this.audio.muted = usePlayerStore.getState().isMuted;
-      this.audio.load();
-
-      if (autoPlay) {
-        this.play();
+    
+    this.howler = new Howl({
+      src: [assetUrl],
+      html5: false,
+      format: ['mp3', 'flac', 'wav', 'ogg', 'aac', 'm4a'],
+      volume: usePlayerStore.getState().volume,
+      mute: usePlayerStore.getState().isMuted,
+      onload: () => {
+        usePlayerStore.setState({ duration: this.howler?.duration() || 0 });
+        if (autoPlay) {
+          this.play();
+        }
+      },
+      onplay: () => {
+        usePlayerStore.setState({ isPlaying: true, isPaused: false });
+        this.startProgressTracking();
+      },
+      onpause: () => {
+        usePlayerStore.setState({ isPaused: true, isPlaying: false });
+      },
+      onend: () => {
+        this.handleTrackEnd();
+      },
+      onloaderror: (id, error) => {
+        console.error('Audio load error:', id, error);
+        usePlayerStore.setState({ isPlaying: false });
+      },
+      onplayerror: (id, error) => {
+        console.error('Audio play error:', id, error);
+        usePlayerStore.setState({ isPlaying: false });
       }
-    }
+    });
   }
 
-  /**
-   * Starts playback of the loaded track.
-   */
   public play(): void {
-    if (this.audio) {
-      this.audio.play().catch(e => {
-        console.error('Audio play failed:', e);
-      });
+    if (this.howler && !this.howler.playing()) {
+      this.howler.play();
     }
   }
 
-  /**
-   * Pauses playback of the loaded track.
-   */
   public pause(): void {
-    if (this.audio) {
-      this.audio.pause();
+    if (this.howler) {
+      this.howler.pause();
     }
   }
 
-  /**
-   * Stops playback of the loaded track and resets seek position.
-   */
   public stop(): void {
-    if (this.audio) {
-      this.audio.pause();
-      this.audio.currentTime = 0;
+    if (this.howler) {
+      this.howler.stop();
     }
     this.stopProgressTracking();
   }
 
-  /**
-   * Seeks to a specific timestamp in seconds.
-   */
   public seekTo(seconds: number): void {
-    if (this.audio) {
-      this.audio.currentTime = seconds;
+    if (this.howler) {
+      this.howler.seek(seconds);
       usePlayerStore.setState({ currentTime: seconds });
     }
   }
 
-  /**
-   * Updates playback volume.
-   * Clamps the value between 0 and 1.
-   */
   public setVolume(volume: number): void {
     const clampedVolume = Math.max(0, Math.min(1, volume));
-    if (this.audio) {
-      this.audio.volume = clampedVolume;
+    if (this.howler) {
+      this.howler.volume(clampedVolume);
     }
     usePlayerStore.setState({ volume: clampedVolume });
   }
 
-  /**
-   * Toggles the mute state of the audio engine.
-   */
   public toggleMute(): void {
     const isMuted = !usePlayerStore.getState().isMuted;
-    if (this.audio) {
-      this.audio.muted = isMuted;
+    if (this.howler) {
+      this.howler.mute(isMuted);
     }
     usePlayerStore.setState({ isMuted });
   }
 
-  /**
-   * Returns current seek position in seconds.
-   */
   public getCurrentTime(): number {
-    if (this.audio) {
-      return this.audio.currentTime;
+    if (this.howler && this.howler.playing()) {
+      return this.howler.seek() as number;
     }
-    return 0;
+    return usePlayerStore.getState().currentTime;
   }
 
-  /**
-   * Returns total duration of current track in seconds.
-   */
   public getDuration(): number {
-    if (this.audio && !isNaN(this.audio.duration)) {
-      return this.audio.duration;
+    if (this.howler) {
+      return this.howler.duration();
     }
     return 0;
   }
 
-  /**
-   * Unloads the current song and frees engine resources.
-   */
   public unload(): void {
-    if (this.audio) {
-      this.audio.pause();
-      this.audio.removeAttribute('src');
-      this.audio.load();
+    if (this.howler) {
+      this.howler.unload();
+      this.howler = null;
     }
     this.currentFilePath = null;
     this.stopProgressTracking();
   }
 
-  /**
-   * Starts tracking current playback position every 250ms.
-   */
   private startProgressTracking(): void {
     this.stopProgressTracking();
     this.progressInterval = setInterval(() => {
-      if (this.audio && !this.audio.paused) {
-        const position = this.audio.currentTime;
+      if (this.howler && this.howler.playing()) {
+        const position = this.howler.seek() as number;
         usePlayerStore.setState({ currentTime: position });
         
         this.elapsedSeconds += 0.25;
         
-        // Last.fm scrobble condition check
-        const duration = this.audio.duration;
-        if (!isNaN(duration) && position >= 30 && (position >= duration / 2 || position >= 240)) {
+        const duration = this.howler.duration();
+        if (duration && position >= 30 && (position >= duration / 2 || position >= 240)) {
           const store = usePlayerStore.getState();
           if (!store.hasScrobbled) {
             store.scrobbleCurrentSong();
@@ -201,9 +154,6 @@ export class AudioEngine {
     }, 250);
   }
 
-  /**
-   * Stops the progress tracking interval.
-   */
   private stopProgressTracking(): void {
     if (this.progressInterval) {
       clearInterval(this.progressInterval);
@@ -211,10 +161,6 @@ export class AudioEngine {
     }
   }
 
-  /**
-   * Handles actions when a song completes playback.
-   * Obeys repeat configurations.
-   */
   private handleTrackEnd(): void {
     const currentSong = usePlayerStore.getState().currentSong;
     if (currentSong) {
@@ -224,17 +170,15 @@ export class AudioEngine {
         completed: true
       }).catch(console.error);
 
-      // Only increment play count when song actually finishes playing
       useLibraryStore.getState().updateSong(currentSong.id, {
         playCount: currentSong.playCount + 1,
         lastPlayed: new Date().toISOString()
       });
     }
     
-    // Reset elapsed seconds immediately so `load()` doesn't trigger the "incomplete" event
     this.elapsedSeconds = 0;
-
     this.stopProgressTracking();
+    
     const repeatMode = usePlayerStore.getState().repeat;
 
     if (repeatMode === 'one') {
@@ -242,9 +186,7 @@ export class AudioEngine {
         this.load(this.currentFilePath, true);
       }
     } else {
-      // For 'all' or 'none', invoke the store's next() action
       usePlayerStore.getState().next();
-      // Load and play the new current track from the store (if any)
       const nextSong = usePlayerStore.getState().currentSong;
       if (nextSong) {
         this.load(nextSong.filePath, true);
@@ -255,5 +197,4 @@ export class AudioEngine {
   }
 }
 
-// Export a singleton instance of the AudioEngine
 export const audioEngine = new AudioEngine();

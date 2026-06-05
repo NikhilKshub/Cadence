@@ -8,20 +8,20 @@ export default {
     extend: {
       fontFamily: {
         display: [
-          'Cabinet Grotesk', 
-          'SF Pro Display',
-          'system-ui', 
+          'Cabinet Grotesk',
+          'Segoe UI',
+          'system-ui',
           'sans-serif'
         ],
         sans: [
           'Satoshi',
-          'SF Pro Text', 
+          'Segoe UI',
           'system-ui', 
           'sans-serif'
         ],
         mono: [
           'JetBrains Mono',
-          'SF Mono',
+          'Consolas',
           'monospace'
         ],
       },
@@ -118,32 +118,32 @@ export default {
         equalizer: {
           from: { transform: 'scaleY(0.3)' },
           to: { transform: 'scaleY(1)' },
-        },
-      },
-      safelist: [
-        'animate-fade-in',
-        'animate-slide-up',
-        'animate-slide-right',
-        'animate-scale-in',
-        'animate-glow-pulse',
-        'animate-equalizer',
-        'glass',
-        'glass-strong',
-        'glow-accent',
-        'surface-card',
-        'surface-elevated',
-        'btn-accent',
-        'interactive',
-        'text-display',
-        'text-heading-1',
-        'text-heading-2',
-        'text-heading-3',
-        'text-body',
-        'text-body-sm',
-        'text-label',
-        'text-mono',
-      ]
-    },
+        }
+      }
+    }
   },
+  safelist: [
+    'animate-fade-in',
+    'animate-slide-up',
+    'animate-slide-right',
+    'animate-scale-in',
+    'animate-glow-pulse',
+    'animate-equalizer',
+    'glass',
+    'glass-strong',
+    'glow-accent',
+    'surface-card',
+    'surface-elevated',
+    'btn-accent',
+    'interactive',
+    'text-display',
+    'text-heading-1',
+    'text-heading-2',
+    'text-heading-3',
+    'text-body',
+    'text-body-sm',
+    'text-label',
+    'text-mono',
+  ],
   plugins: [],
 }

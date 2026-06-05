@@ -85,11 +85,12 @@ export default function App() {
 
   // Set initial theme to avoid flash
   useEffect(() => {
-    const theme = useSettingsStore.getState().theme;
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const resolvedTheme = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme;
-    document.documentElement.setAttribute('data-theme', resolvedTheme);
-  }, []);
+    if (isSettingsLoaded) {
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const resolvedTheme = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme;
+      document.documentElement.setAttribute('data-theme', resolvedTheme);
+    }
+  }, [theme, isSettingsLoaded]);
 
   // Drag and drop listener
   useEffect(() => {
@@ -204,7 +205,6 @@ export default function App() {
     return <Onboarding />;
   }
 
-  // Set initial theme to avoid flash (moved to top)
 
   return (
     <div 
