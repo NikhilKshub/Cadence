@@ -7,28 +7,37 @@ Cadence is designed for users who want a beautiful, fast, and privacy-focused de
 ---
 
 ## Screenshots
-
 ### Home
 
-![Home Screen](screenshots/home.png)
+![Home](screenshots/home.png)
 
 ### Library
 
 ![Library](screenshots/library.png)
 
+### Albums
+
+![Albums](screenshots/album.png)
+
+### Artists
+
+![Artists](screenshots/artist.png)
+
+### Playlists
+
+![Playlists](screenshots/playlist.png)
+
+### Liked Songs
+
+![Liked Songs](screenshots/likedsong.png)
+
 ### Now Playing
 
-![Now Playing](screenshots/[now-playing.png](https://github.com/NikhilKshub/Cadence/blob/a9efd7e30d4297700bcbbfb34f4f1c3dd08ae926/screenshots/nowplaying.png))
-
-### Lyrics View
-
-![Lyrics](screenshots/lyrics.png)
+![Now Playing](screenshots/nowplaying.png)
 
 ### Mini Player
 
-![Mini Player](screenshots/mini-player.png)
-
----
+![Mini Player](screenshots/miniplayer.png)
 
 ## Features
 
