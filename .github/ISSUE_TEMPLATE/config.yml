@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🐛 Report a Bug
+    url: https://forms.gle/S9V8T7rDTZfzBucn9
+    about: Use our official form to report issues so they can be tracked efficiently.
+  - name: 💡 Request a Feature
+    url: https://forms.gle/TQbZzwfqkZGDyTQP6
+    about: Use our official form to suggest new features or improvements.
