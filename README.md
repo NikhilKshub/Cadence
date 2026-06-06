@@ -18,7 +18,7 @@ Cadence is designed for users who want a beautiful, fast, and privacy-focused de
 
 ### Now Playing
 
-![Now Playing](screenshots/now-playing.png)
+![Now Playing](screenshots/[now-playing.png](https://github.com/NikhilKshub/Cadence/blob/a9efd7e30d4297700bcbbfb34f4f1c3dd08ae926/screenshots/nowplaying.png))
 
 ### Lyrics View
 
