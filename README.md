@@ -55,24 +55,15 @@ Download the latest release from:
 https://github.com/NikhilKshub/Cadence/releases
 
 Available installers:
-
 * Windows Installer (.msi)
 * Windows Setup (.exe)
 
 ---
-
 ## System Requirements
-
 ### Supported Operating Systems
 
 * Windows 10
 * Windows 11
-
-### Architecture
-
-* x64
-
----
 
 ## Feedback
 
