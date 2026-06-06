@@ -6,6 +6,7 @@ import NowPlaying from '../../pages/NowPlaying';
 import Settings from '../../pages/Settings';
 import Albums from '../../pages/Albums';
 import Artists from '../../pages/Artists';
+import LikedSongs from '../../pages/LikedSongs';
 
 
 
@@ -20,6 +21,7 @@ export default function MainContent() {
         {currentPage === 'albums' && <Albums />}
         {currentPage === 'artists' && <Artists />}
         {currentPage === 'playlists' && <Playlists />}
+        {currentPage === 'likedsongs' && <LikedSongs />}
         {currentPage === 'settings' && <Settings />}
         {currentPage === 'nowplaying' && <NowPlaying />}
       </div>

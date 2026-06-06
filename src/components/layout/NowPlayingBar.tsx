@@ -11,7 +11,6 @@ import {
   VolumeX, 
   List, 
   PictureInPicture2,
-  Heart,
   Music2 
 } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
@@ -20,6 +19,7 @@ import { useUiStore } from '../../store/uiStore';
 import { audioEngine } from '../../utils/audioEngine';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { formatTime } from '../../utils/formatters';
+import AnimatedHeart from '../common/AnimatedHeart';
 
 const CustomNowPlayingIcon = ({ size = 16, className = "" }) => (
   <svg 
@@ -110,20 +110,14 @@ export default function NowPlayingBar() {
         </div>
         
         {/* Heart Button */}
-        <button 
-          onMouseDown={e => e.preventDefault()}
-          onClick={() => hasSong && toggleFavorite(currentSong.id)}
-          className={`group flex h-[28px] w-[28px] items-center justify-center rounded-[6px] transition-colors duration-150 ${hasSong ? 'cursor-pointer' : 'opacity-40 pointer-events-none'}`}
-        >
-          <Heart 
-            size={15} 
-            className={`transition-colors duration-150 ${
-              currentSong?.isFavorite 
-                ? 'fill-[#E8630A] text-[#E8630A]' 
-                : 'text-[#5A5248] group-hover:text-[#9A9080]'
-            }`} 
+        <div className={`flex h-[28px] w-[28px] items-center justify-center rounded-[6px] transition-colors duration-150 ${hasSong ? 'cursor-pointer' : 'opacity-40 pointer-events-none'}`}>
+          <AnimatedHeart 
+            isLiked={!!currentSong?.isFavorite} 
+            onClick={() => hasSong && toggleFavorite(currentSong.id)}
+            size={15}
+            className="w-full h-full"
           />
-        </button>
+        </div>
       </div>
 
       {/* CENTER COLUMN */}

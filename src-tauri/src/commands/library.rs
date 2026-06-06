@@ -1,4 +1,4 @@
-﻿// Cadence — Library scanning and management commands
+// Cadence — Library scanning and management commands
 // Handles file system scanning, metadata extraction, and song CRUD operations
 
 use std::path::PathBuf;
@@ -399,6 +399,8 @@ pub async fn delete_song_from_disk(
     use std::fs;
     use std::path::Path;
     use tauri::Emitter;
+
+    crate::commands::library::sanitize_path(&file_path)?;
 
     let path = Path::new(&file_path);
     
@@ -1317,6 +1319,21 @@ pub async fn load_songs_from_db(
     .filter_map(Result::ok)
     .collect();
 
+    use tauri_plugin_fs::FsExt;
+    if let Some(scope) = app_handle.try_fs_scope() {
+        let mut unique_dirs = std::collections::HashSet::new();
+        for song in &songs {
+            if let Some(path_str) = song.get("filePath").and_then(|s| s.as_str()) {
+                if let Some(parent) = std::path::Path::new(path_str).parent() {
+                    unique_dirs.insert(parent.to_path_buf());
+                }
+            }
+        }
+        for dir in unique_dirs {
+            let _ = scope.allow_directory(&dir, true);
+        }
+    }
+
     log::info!("Loaded {} songs from database", songs.len());
     Ok(songs)
 }
@@ -1473,6 +1490,41 @@ pub async fn save_artist_image(
         rusqlite::params![name, image_url, fetched_at],
     )
     .map_err(|e| format!("Failed to save artist image: {}", e))?;
+    
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn reset_library_db(app_handle: tauri::AppHandle) -> Result<(), String> {
+    let conn = get_db_connection(&app_handle)?;
+    
+    let tables = [
+        "songs",
+        "playlists",
+        "playlist_songs",
+        "lyrics",
+        "listening_stats",
+        "daily_stats",
+        "artists"
+    ];
+    
+    for table in tables.iter() {
+        // We ignore errors on drop/delete since some tables might not exist 
+        let _ = conn.execute(&format!("DELETE FROM {}", table), []);
+    }
+    
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn clear_artwork_cache(app_handle: tauri::AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+    let app_dir = app_handle.path().app_data_dir().map_err(|e| e.to_string())?;
+    let art_dir = app_dir.join("artwork");
+    
+    if art_dir.exists() {
+        std::fs::remove_dir_all(&art_dir).map_err(|e| format!("Failed to clear artwork cache: {}", e))?;
+    }
     
     Ok(())
 }

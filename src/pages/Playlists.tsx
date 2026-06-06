@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Music, ListMusic, ArrowLeft, Play, Heart, Trash2 } from 'lucide-react';
+import { Plus, Music, ListMusic, ArrowLeft, Play, Trash2 } from 'lucide-react';
 import { useLibraryStore } from '../store/libraryStore';
 import { usePlayerStore } from '../store/playerStore';
 import { usePlayer } from '../hooks/usePlayer';
 import type { Song } from '../types/song';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { formatTime } from '../utils/formatters';
+import AnimatedHeart from '../components/common/AnimatedHeart';
+import PlaylistCoverArt from '../components/common/PlaylistCoverArt';
 
 const GRADIENTS = [
   'from-[#1a1a2e] to-[#16213e]',
@@ -131,11 +133,11 @@ export default function Playlists() {
               <ArrowLeft size={20} />
             </button>
             <div className="h-48 w-48 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1a2e] to-[#2d1b69] shadow-2xl flex items-center justify-center">
-              {activePlaylist.coverArtPath ? (
-                <img src={convertFileSrc(activePlaylist.coverArtPath)} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <Music size={64} className="text-white opacity-80" />
-              )}
+              <PlaylistCoverArt 
+                artPaths={activeSongs.map(s => s?.albumArtPath)} 
+                className="h-full w-full"
+                iconSize={64}
+              />
             </div>
             <div className="flex flex-col justify-end h-48 pb-2">
               <span className="text-sm font-medium text-white uppercase tracking-wider mb-2">Playlist</span>
@@ -212,12 +214,13 @@ export default function Playlists() {
                     <div className="w-24 shrink-0 text-right text-[13px] text-[#6b6b6b] tabular-nums">{formatTime(song.duration)}</div>
                     
                     <div className="flex w-10 shrink-0 items-center justify-end">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); toggleFavorite(song.id); }}
-                        className={`transition-colors duration-150 hover:text-white ${song.isFavorite ? 'opacity-100 text-[#7c3aed]' : 'opacity-0 text-[#6b6b6b] group-hover:opacity-100'}`}
-                      >
-                        <Heart size={16} className={song.isFavorite ? 'fill-[#7c3aed]' : ''} />
-                      </button>
+                      <div className={`transition-all duration-150 w-[24px] h-[24px] flex items-center justify-center ${song.isFavorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <AnimatedHeart 
+                          isLiked={!!song.isFavorite} 
+                          onClick={() => toggleFavorite(song.id)}
+                          size={16}
+                        />
+                      </div>
                     </div>
                   </div>
                 );
@@ -255,12 +258,12 @@ export default function Playlists() {
                 onContextMenu={(e) => handleContextMenu(e, playlist.id, 'playlist')}
                 className="group flex flex-col gap-3 rounded-xl p-3 hover:bg-[#1a1a1a] transition-all duration-150 cursor-pointer border border-transparent hover:border-white/10 hover:scale-[1.02]"
               >
-                <div className={`flex h-[160px] w-full items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-lg overflow-hidden`}>
-                  {playlist.coverArtPath ? (
-                    <img src={playlist.coverArtPath} alt={playlist.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <Music size={32} className="text-white opacity-80" />
-                  )}
+                <div className={`flex aspect-square w-full items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-lg overflow-hidden`}>
+                  <PlaylistCoverArt 
+                    artPaths={playlist.songIds.map(id => songs.find(s => s.id === id)?.albumArtPath)} 
+                    className="h-full w-full"
+                    iconSize={32}
+                  />
                 </div>
                 <div className="flex flex-col">
                   <span className="truncate text-[14px] font-bold text-white">{playlist.name}</span>

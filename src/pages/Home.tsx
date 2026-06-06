@@ -368,15 +368,16 @@ export default function Home() {
           {/* Card 1 */}
           <div className="flex-1 bg-[#141414] border border-[rgba(255,255,255,0.04)] rounded-[20px] px-[24px] py-[20px] flex justify-between items-center transition-colors hover:bg-[rgba(255,255,255,0.02)] hover:border-[rgba(255,255,255,0.08)]">
             <div className="flex flex-col">
-              <span className="font-sans text-[11px] font-semibold tracking-wider uppercase text-[#5A5248] mb-1">Minutes Today</span>
+              <span className="font-sans text-[11px] font-semibold tracking-wider uppercase text-[#5A5248] mb-1">Listened Today</span>
               <div className="flex items-baseline gap-2">
                  <span className="font-display text-[28px] font-bold text-[#F5F0EB] tracking-tight leading-none">
                    {stats ? Math.round(stats.today_minutes || 0) : '0'}
                  </span>
-                 <span className="font-sans text-[12px] text-[#9A9080]">
-                   / {stats ? stats.daily_breakdown.find(d => d.date === new Date().toISOString().split('T')[0])?.songs_played || 0 : 0} songs
-                 </span>
+                 <span className="font-sans text-[12px] text-[#9A9080]">mins</span>
               </div>
+              <span className="font-sans text-[11px] text-[#6b6b6b] mt-1">
+                across {stats ? stats.daily_breakdown.find(d => d.date === new Date().toLocaleDateString('en-CA'))?.songs_played || 0 : 0} songs
+              </span>
             </div>
             <div className="w-[40px] h-[40px] rounded-full bg-[rgba(255,255,255,0.03)] flex items-center justify-center shrink-0">
               <Clock size={18} className="text-[#9A9080]" />
@@ -396,10 +397,21 @@ export default function Home() {
             </div>
             <div className="flex items-end gap-[4px] h-[28px]">
               {Array.from({length: 7}).map((_, i) => {
-                const dayStat = stats?.daily_breakdown[i];
-                const maxMins = stats ? Math.max(...(stats.daily_breakdown.map(d => d.minutes) || [1])) : 1;
-                const height = dayStat ? Math.max(15, (dayStat.minutes / maxMins) * 100) : 15;
-                return <div key={i} className="w-[5px] rounded-full bg-[#E8630A] transition-all duration-300 opacity-80" style={{ height: `${height}%` }} />
+                // Get the date for i days ago
+                const d = new Date();
+                d.setDate(d.getDate() - (6 - i));
+                const dateStr = d.toLocaleDateString('en-CA');
+                const dayStat = stats?.daily_breakdown.find(b => b.date === dateStr);
+                
+                const validMins = stats?.daily_breakdown.map(b => b.minutes).filter(m => m > 0) || [];
+                const maxMins = validMins.length > 0 ? Math.max(...validMins) : 1;
+                const minutes = dayStat ? dayStat.minutes : 0;
+                
+                // If 0 minutes, make it barely visible
+                const height = minutes > 0 ? Math.max(15, (minutes / maxMins) * 100) : 10;
+                const opacity = minutes > 0 ? 0.8 : 0.2;
+                
+                return <div key={i} title={`${dateStr}: ${Math.round(minutes)} mins`} className="w-[5px] rounded-full bg-[#E8630A] transition-all duration-300" style={{ height: `${height}%`, opacity }} />
               })}
             </div>
           </div>
@@ -558,9 +570,9 @@ export default function Home() {
 
       {/* EMPTY STATE */}
       {!hasSongs && !search && (
-        <div className="flex flex-col items-center justify-center flex-1 w-full h-full m-auto py-20">
+        <div className="flex flex-col items-center justify-center flex-1 w-full h-full pb-[10vh]">
           <div className="w-[80px] h-[80px] rounded-[24px] bg-[#141414] border border-[rgba(255,255,255,0.08)] flex items-center justify-center mb-[24px] shadow-xl">
-            <Music2 size={36} className="text-[#E8630A]" />
+            <img src="/logo.png" alt="Cadence Logo" className="w-[40px] h-[40px] object-contain drop-shadow-[0_0_12px_rgba(232,99,10,0.6)]" />
           </div>
           <h2 className="font-display text-[32px] font-bold text-[#F5F0EB] text-center mb-[8px] tracking-tight">
             Welcome to Cadence

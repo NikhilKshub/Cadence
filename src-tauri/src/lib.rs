@@ -17,7 +17,7 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin(tauri_plugin_updater::Builder::new().build())
+
         .setup(|app| {
             // Log app data directory for debugging
             let app_data = app.path().app_data_dir().expect("failed to resolve app data dir");
@@ -38,8 +38,8 @@ pub fn run() {
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 match database::initialize_database(&handle).await {
-                    Ok(_) => println!("Database initialized"),
-                    Err(e) => eprintln!("DB error: {}", e),
+                    Ok(_) => {}
+                    Err(e) => log::error!("DB error: {}", e),
                 }
             });
             
@@ -153,8 +153,8 @@ pub fn run() {
             commands::library::get_listening_stats,
             commands::library::save_songs_to_db,
             commands::library::load_songs_from_db,
-            commands::updater::check_for_updates,
-            commands::updater::install_update,
+            commands::library::reset_library_db,
+            commands::library::clear_artwork_cache,
             commands::system::restart_app,
         ])
         .manage(commands::system::DiscordState(std::sync::Mutex::new(None)))

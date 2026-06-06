@@ -21,6 +21,7 @@
         "decorations": false,
         "transparent": true,
         "shadow": false,
+        "center": true,
         "label": "main"
       }
     ],
@@ -34,20 +35,15 @@
           "$DOWNLOAD/**",
           "$MUSIC/**",
           "$DESKTOP/**",
-          "$HOME/**"
+          "$HOME/**",
+          "$APPCACHE/**",
+          "$LOCALAPPDATA/**"
         ]
       },
-      "csp": "default-src 'self' asset: https://asset.localhost; script-src 'self'; style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://api.fontshare.com https://fonts.gstatic.com; img-src 'self' data: asset: https://asset.localhost blob: https:; media-src 'self' asset: https://asset.localhost blob:; connect-src 'self' https://lrclib.net https://itunes.apple.com https://musicbrainz.org https://ws.audioscrobbler.com https://coverartarchive.org https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com;"
+      "csp": "default-src 'self' asset: http://asset.localhost https://asset.localhost; script-src 'self'; style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://api.fontshare.com https://fonts.gstatic.com; img-src 'self' data: asset: http://asset.localhost https://asset.localhost blob: https:; media-src 'self' asset: http://asset.localhost https://asset.localhost blob:; connect-src 'self' https://lrclib.net https://itunes.apple.com https://musicbrainz.org https://ws.audioscrobbler.com https://coverartarchive.org https://api.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com;"
     }
   },
-  "plugins": {
-    "updater": {
-      "pubkey": "PLACEHOLDER_PUBLIC_KEY",
-      "endpoints": [
-        "https://github.com/YOUR_USERNAME/cadence/releases/latest/download/latest.json"
-      ]
-    }
-  },
+  "plugins": {},
   "bundle": {
     "active": true,
     "targets": ["msi", "nsis"],
@@ -66,7 +62,7 @@
         "language": "en-US"
       }
     },
-    "publisher": "Your Name Here",
+    "publisher": "Cadence Team",
     "copyright": "Copyright 2025 Cadence",
     "category": "Music",
     "shortDescription": "A premium desktop music player",

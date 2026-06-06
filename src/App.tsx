@@ -11,7 +11,7 @@ import QueuePanel from './components/player/QueuePanel';
 import MiniPlayer from './components/miniPlayer/MiniPlayer';
 import Onboarding from './pages/Onboarding';
 import ToastContainer from './components/common/Toast';
-import UpdateNotification from './components/common/UpdateNotification';
+import GlobalLikeAnimation from './components/common/GlobalLikeAnimation';
 
 import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
@@ -241,8 +241,8 @@ export default function App() {
       ) : (
         <>
           <TitleBar />
-          <UpdateNotification />
-          <div className="flex flex-1 overflow-hidden">
+
+          <div className="flex flex-1 overflow-hidden pb-[88px]">
             <Sidebar />
             <MainContent />
             {isQueueOpen && <QueuePanel />}
@@ -250,6 +250,7 @@ export default function App() {
           <NowPlayingBar />
         </>
       )}
+      <GlobalLikeAnimation />
     </div>
   );
 }

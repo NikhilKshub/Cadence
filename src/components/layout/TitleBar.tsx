@@ -6,14 +6,13 @@ export default function TitleBar() {
   return (
     <div 
       className="flex h-[38px] w-full shrink-0 items-center justify-between bg-[#0a0a0a] select-none"
-      data-tauri-drag-region
     >
       {/* Left empty for balance or future use */}
-      <div className="flex-1 pointer-events-none" data-tauri-drag-region></div>
+      <div className="flex-1" data-tauri-drag-region></div>
 
       {/* Center - Title */}
       <div 
-        className="flex-1 text-center text-xs font-medium text-[#a3a3a3] pointer-events-none"
+        className="flex-1 text-center text-xs font-medium text-[#a3a3a3]"
         data-tauri-drag-region
       >
         Cadence

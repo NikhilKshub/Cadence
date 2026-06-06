@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
-import { Music2, Heart, MicOff } from 'lucide-react';
+import { Music2, MicOff } from 'lucide-react';
 import { usePlayer } from '../hooks/usePlayer';
 import { useLibraryStore } from '../store/libraryStore';
 import { formatTime } from '../utils/formatters';
+import AnimatedHeart from '../components/common/AnimatedHeart';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface LyricsResult {
@@ -340,12 +341,14 @@ export default function NowPlaying() {
 
           {/* HEART BUTTON */}
           {currentSong && (
-            <button 
-              onClick={() => toggleFavorite(currentSong.id)}
-              className="w-[40px] h-[40px] rounded-full bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.10)] flex items-center justify-center transition-all duration-200 hover:scale-110 hover:bg-[rgba(232,99,10,0.12)] group"
-            >
-              <Heart size={18} className={currentSong.isFavorite ? 'text-[#E8630A] fill-[#E8630A]' : 'text-[#5A5248]'} />
-            </button>
+            <div className="w-[40px] h-[40px] rounded-full bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.10)] flex items-center justify-center transition-all duration-200 hover:bg-[rgba(232,99,10,0.12)]">
+              <AnimatedHeart 
+                isLiked={!!currentSong.isFavorite} 
+                onClick={() => toggleFavorite(currentSong.id)}
+                size={18}
+                className="w-full h-full"
+              />
+            </div>
           )}
 
         </div>

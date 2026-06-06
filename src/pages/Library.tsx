@@ -10,6 +10,7 @@ import EditSongModal from '../components/library/EditSongModal';
 import AddToPlaylistModal from '../components/library/AddToPlaylistModal';
 import DeleteConfirmationModal from '../components/library/DeleteConfirmationModal';
 import { toast } from '../store/toastStore';
+import AnimatedHeart from '../components/common/AnimatedHeart';
 
 function formatTime(seconds: number): string {
   if (isNaN(seconds) || seconds < 0) return '0:00';
@@ -98,11 +99,9 @@ export default function Library() {
       
       // 3. Purge from active player queue and state
       playerStore.purgeSongFromPlayer(song.id);
-      
-      console.log("Track successfully removed from disk and database cache.");
+      // Update local state to reflect deletion
       toast.success(`Deleted ${song.title || song.fileName}`);
     } catch (error) {
-      console.error("Deletion execution halted:", error);
       toast.error(`Failed to complete deletion: ${error}`);
     }
   };
@@ -295,12 +294,13 @@ export default function Library() {
 
                     {/* COLUMN 5 */}
                     <div className="flex items-center justify-end gap-3 text-right">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); toggleFavorite(song.id); }}
-                        className={`transition-colors duration-150 hover:scale-110 ${song.isFavorite ? 'opacity-100 text-[#E8630A]' : 'opacity-0 text-[#5A5248] group-hover:opacity-100 hover:text-[#9A9080]'}`}
-                      >
-                        <Heart size={14} className={song.isFavorite ? 'fill-[#E8630A]' : ''} />
-                      </button>
+                      <div className={`transition-all duration-150 w-[24px] h-[24px] flex items-center justify-center ${song.isFavorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <AnimatedHeart 
+                          isLiked={!!song.isFavorite} 
+                          onClick={() => toggleFavorite(song.id)}
+                          size={14}
+                        />
+                      </div>
                       <span className="font-mono text-[12px] text-[#5A5248] w-[40px]">
                         {formatTime(song.duration)}
                       </span>

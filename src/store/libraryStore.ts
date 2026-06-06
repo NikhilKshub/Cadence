@@ -89,6 +89,7 @@ interface LibraryStoreState {
   setScanning: (isScanning: boolean) => void;
   setScanProgress: (progress: number) => void;
   toggleFavorite: (songId: string) => void;
+  clearLibrary: () => Promise<void>;
   scanFolder: (folderPath: string) => Promise<void>;
   addMusicFolder: (folderPath: string) => Promise<void>;
 
@@ -98,6 +99,7 @@ interface LibraryStoreState {
   getSongsByAlbum: (album: string) => Song[];
   getSongsByArtist: (artist: string) => Song[];
   searchSongs: (query: string) => Song[];
+  getLikedSongs: () => Song[];
 
   // Playlist Actions
   createPlaylist: (name: string, description?: string) => string;
@@ -240,16 +242,42 @@ export const useLibraryStore = create<LibraryStoreState>()((set, get) => ({
   setScanProgress: (progress) => set({ scanProgress: Math.max(0, Math.min(100, progress)) }),
 
   toggleFavorite: async (songId) => {
-    set((state) => ({
-      songs: state.songs.map((s) =>
-        s.id === songId ? { ...s, isFavorite: !s.isFavorite } : s
-      ),
-    }));
-
-    // Persist the toggled song to DB
     const song = get().songs.find(s => s.id === songId);
-    if (song) {
-      persistSongsToDb([song]);
+    if (!song) return;
+    
+    // updateSong automatically handles:
+    // 1. Updating libraryStore
+    // 2. Syncing playerStore (currentSong & queue)
+    // 3. Persisting to database
+    get().updateSong(songId, { isFavorite: !song.isFavorite });
+  },
+
+  clearLibrary: async () => {
+    try {
+      // 1. Delete all database records for songs and playlists
+      await invoke('reset_library_db');
+      
+      // 2. Clear orphaned artwork cache
+      await invoke('clear_artwork_cache');
+      
+      // 3. Clear frontend state
+      set({ 
+        songs: [], 
+        playlists: [],
+        lastScanned: null,
+        scanProgress: 0,
+        isScanning: false 
+      });
+      
+      // 4. Force UI update via toast if needed
+      import('./toastStore').then(({ toast }) => {
+        toast.success("Library has been reset");
+      });
+    } catch (err) {
+      console.error('Failed to clear library:', err);
+      import('./toastStore').then(({ toast }) => {
+        toast.error("Failed to reset library");
+      });
     }
   },
 
@@ -488,6 +516,12 @@ export const useLibraryStore = create<LibraryStoreState>()((set, get) => ({
         (s.genre || '').toLowerCase().includes(lowerQuery)
       )
       .slice(0, 50);
+  },
+
+  getLikedSongs: () => {
+    return get().songs
+      .filter((s) => s.isFavorite)
+      .sort((a, b) => a.title.localeCompare(b.title));
   },
 
   createPlaylist: (name, description) => {

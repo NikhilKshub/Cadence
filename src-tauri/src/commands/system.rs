@@ -48,9 +48,9 @@ pub async fn set_window_title(app: AppHandle, title: String) -> Result<(), Strin
 pub async fn open_folder_dialog(app: AppHandle) -> Result<Option<String>, String> {
     use tauri_plugin_dialog::DialogExt;
 
-    // Wrap the blocking picker in spawn_blocking to avoid blocking the async executor thread
+    let app_clone = app.clone();
     let folder_path = tauri::async_runtime::spawn_blocking(move || {
-        app.dialog()
+        app_clone.dialog()
             .file()
             .blocking_pick_folder()
     })
@@ -62,6 +62,12 @@ pub async fn open_folder_dialog(app: AppHandle) -> Result<Option<String>, String
             let path_buf = file_path
                 .into_path()
                 .map_err(|_| "Failed to convert FilePath to PathBuf".to_string())?;
+                
+            use tauri_plugin_fs::FsExt;
+            if let Some(scope) = app.try_fs_scope() {
+                let _ = scope.allow_directory(&path_buf, true);
+            }
+                
             Ok(Some(path_buf.to_string_lossy().to_string()))
         }
         None => Ok(None),
@@ -167,27 +173,17 @@ use discord_rich_presence::{
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-const DISCORD_CLIENT_ID: &str = "1234567890";
+// const DISCORD_CLIENT_ID: &str = "1234567890"; // Removed for v1.0.0 public release
 
 pub struct DiscordState(pub Mutex<Option<DiscordIpcClient>>);
 
 #[tauri::command]
 pub async fn discord_connect(
-    state: tauri::State<'_, DiscordState>,
+    _state: tauri::State<'_, DiscordState>,
 ) -> Result<bool, String> {
-    let mut client_lock = state.0.lock().map_err(|_| "Failed to lock Discord state".to_string())?;
-    
-    match DiscordIpcClient::new(DISCORD_CLIENT_ID) {
-        Ok(mut client) => {
-            if client.connect().is_ok() {
-                *client_lock = Some(client);
-                Ok(true)
-            } else {
-                Ok(false)
-            }
-        }
-        Err(_) => Ok(false),
-    }
+    // Discord Rich Presence is temporarily disabled for v1.0.0
+    // Keep architecture intact but return false to prevent startup errors or IPC attempts.
+    Ok(false)
 }
 
 #[tauri::command]

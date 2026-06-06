@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { House, Music2, Disc3, Mic2, ListMusic, Radio, Moon, Settings2, Play, Pause } from 'lucide-react';
+import { House, Music2, Disc3, Mic2, ListMusic, Radio, Moon, Settings2, Play, Pause, Heart } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
 import { usePlayer } from '../../hooks/usePlayer';
 import { useLibraryStore } from '../../store/libraryStore';
@@ -19,6 +19,7 @@ export default function Sidebar() {
   const navigate = useUiStore((state) => state.navigate);
   const { currentSong, isPlaying, progressPercent, play, pause } = usePlayer();
   const playlists = useLibraryStore((state) => state.playlists);
+  const likedSongs = useLibraryStore((state) => state.getLikedSongs());
   const [sleepTimerOpen, setSleepTimerOpen] = useState(false);
 
   const playlistColors = ['#E8630A', '#4ADE80', '#60A5FA'];
@@ -67,6 +68,28 @@ export default function Sidebar() {
               </button>
             );
           })}
+
+          <button
+            onClick={() => navigate('likedsongs')}
+            className={`h-[40px] px-[12px] rounded-[10px] flex items-center justify-between transition-all duration-150 ease-in-out mb-[2px] group ${
+              currentPage === 'likedsongs'
+                ? 'bg-[rgba(232,99,10,0.10)] text-[#F5F0EB] font-semibold border-l-2 border-[#E8630A] pl-[10px] shadow-[inset_0_0_0_1px_rgba(232,99,10,0.2)]'
+                : 'bg-transparent text-[#9A9080] font-medium hover:bg-[rgba(255,255,255,0.04)] hover:text-[#F5F0EB]'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Heart
+                size={18}
+                className={currentPage === 'likedsongs' ? 'fill-[#E8630A] text-[#E8630A]' : 'fill-[#E8630A] text-[#E8630A] opacity-80 group-hover:opacity-100 transition-opacity'}
+              />
+              <span className="font-sans text-[14px]">Liked Songs</span>
+            </div>
+            {likedSongs.length > 0 && (
+              <span className="font-mono text-[11px] text-[#5A5248] group-hover:text-[#9A9080] transition-colors">
+                {likedSongs.length}
+              </span>
+            )}
+          </button>
 
           {currentSong && (
             <button

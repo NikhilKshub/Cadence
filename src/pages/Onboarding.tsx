@@ -30,6 +30,11 @@ export default function Onboarding() {
 
   return (
     <div className="fixed inset-0 z-[99999] flex flex-col bg-[#0D0D0D] overflow-hidden">
+      {/* DRAG REGION */}
+      <div 
+        data-tauri-drag-region 
+        className="w-full h-[40px] shrink-0 absolute top-0 left-0 z-50 cursor-grab active:cursor-grabbing"
+      />
       
       {/* AMBIENT BACKGROUND */}
       <div 
@@ -72,11 +77,27 @@ export default function Onboarding() {
             }
             @keyframes float {
               0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-8px); }
+              25% { transform: translateY(-8px); }
+              50% { transform: translateY(0); }
+              75% { transform: translateY(8px); }
             }
             @keyframes bounceIn {
               from { transform: scale(0); opacity: 0; }
               to { transform: scale(1); opacity: 1; }
+            }
+            @keyframes shine {
+              0% { background-position: -200% center; }
+              100% { background-position: 200% center; }
+            }
+            @keyframes blobRotate {
+              0% { transform: rotate(0deg) scale(1); }
+              33% { transform: rotate(120deg) scale(1.1); }
+              66% { transform: rotate(240deg) scale(0.9); }
+              100% { transform: rotate(360deg) scale(1); }
+            }
+            @keyframes blobPulse {
+              0%, 100% { opacity: 0.15; }
+              50% { opacity: 0.3; }
             }
           `}</style>
 
@@ -84,25 +105,53 @@ export default function Onboarding() {
           {step === 1 && (
             <div 
               key="step1" 
-              className="flex flex-col items-center w-full"
+              className="relative flex flex-col items-center w-full"
               style={{ animation: 'slideIn 300ms ease-out forwards' }}
             >
+              {/* Decorative Animated Glow Behind Logo */}
+              <div className="absolute top-[-40px] left-1/2 -translate-x-1/2 w-[200px] h-[200px] rounded-full mix-blend-screen pointer-events-none"
+                   style={{
+                     background: 'radial-gradient(circle, rgba(232,99,10,0.4) 0%, transparent 70%)',
+                     animation: 'blobRotate 10s linear infinite, blobPulse 4s ease-in-out infinite'
+                   }} 
+              />
+              <div className="absolute top-[-20px] left-1/2 -translate-x-[60%] w-[150px] h-[150px] rounded-full mix-blend-screen pointer-events-none"
+                   style={{
+                     background: 'radial-gradient(circle, rgba(255,140,66,0.4) 0%, transparent 70%)',
+                     animation: 'blobRotate 8s linear infinite reverse, blobPulse 6s ease-in-out infinite'
+                   }} 
+              />
+
               {/* Icon */}
               <div 
-                className="w-[96px] h-[96px] rounded-[24px] flex items-center justify-center border border-[rgba(232,99,10,0.2)] shadow-[0_0_48px_rgba(232,99,10,0.15)]"
+                className="relative z-10 w-[84px] h-[84px] rounded-[22px] flex items-center justify-center border border-[rgba(232,99,10,0.3)] shadow-[0_0_32px_rgba(232,99,10,0.25)]"
                 style={{ 
                   background: 'linear-gradient(135deg, #1C1C1C 0%, #2A2520 100%)',
                   animation: 'fadeIn 400ms ease-out forwards'
                 }}
               >
-                <div style={{ animation: 'float 3s ease-in-out infinite' }}>
-                  <Music2 size={48} color="#E8630A" />
+                <div style={{ animation: 'float 6s ease-in-out infinite' }}>
+                  <img src="/logo.png" alt="Cadence Logo" className="w-[64px] h-[64px] object-contain drop-shadow-[0_0_12px_rgba(232,99,10,0.8)]" />
                 </div>
+              </div>
+
+              {/* Brand Wordmark */}
+              <div style={{ animation: 'fadeIn 400ms ease-out forwards 50ms', opacity: 0, animationFillMode: 'forwards' }}>
+                <h2
+                  className="relative z-10 font-display text-[32px] font-[900] tracking-[-0.02em] text-transparent bg-clip-text text-center mt-[8px]"
+                  style={{ 
+                    backgroundImage: 'linear-gradient(to right, #F5F0EB 20%, #FF8C42 50%, #F5F0EB 80%)',
+                    backgroundSize: '200% auto',
+                    animation: 'shine 4s linear infinite', 
+                  }}
+                >
+                  Cadence
+                </h2>
               </div>
 
               {/* Heading */}
               <h1 
-                className="font-display text-[44px] font-[900] text-[#F5F0EB] tracking-[-0.03em] leading-[1.1] text-center mt-[32px]"
+                className="font-display text-[44px] font-[900] text-[#F5F0EB] tracking-[-0.03em] leading-[1.1] text-center mt-[16px]"
                 style={{ animation: 'fadeIn 400ms ease-out forwards 100ms', opacity: 0, animationFillMode: 'forwards' }}
               >
                 Your music.<br/>
@@ -163,7 +212,7 @@ export default function Onboarding() {
                     animation: 'fadeIn 400ms ease-out forwards'
                   }}
                 >
-                  <div style={{ animation: 'float 3s ease-in-out infinite' }}>
+                  <div style={{ animation: 'float 6s ease-in-out infinite' }}>
                     <FolderOpen size={48} color="#E8630A" />
                   </div>
                 </div>

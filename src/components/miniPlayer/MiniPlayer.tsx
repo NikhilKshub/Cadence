@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Heart, ExternalLink } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, ExternalLink } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { usePlayerStore } from '../../store/playerStore';
 import { useUiStore } from '../../store/uiStore';
 import { useLibraryStore } from '../../store/libraryStore';
 import { audioEngine } from '../../utils/audioEngine';
 import { convertFileSrc } from '@tauri-apps/api/core';
+import AnimatedHeart from '../common/AnimatedHeart';
 
 export default function MiniPlayer() {
   const player = usePlayer();
@@ -98,13 +99,14 @@ export default function MiniPlayer() {
             >
               <ExternalLink size={16} className="text-white" />
             </button>
-            <button
-              onMouseDown={e => e.preventDefault()}
-              onClick={() => currentSong && toggleFavorite(currentSong.id)}
-              className="w-[44px] h-[44px] rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all backdrop-blur-xl border-[1.5px] border-white/20 active:scale-95"
-            >
-              <Heart size={16} className={currentSong?.isFavorite ? "fill-white text-white" : "text-white"} />
-            </button>
+            <div className="w-[44px] h-[44px] rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all backdrop-blur-xl border-[1.5px] border-white/20">
+              <AnimatedHeart 
+                isLiked={!!currentSong?.isFavorite} 
+                onClick={() => currentSong && toggleFavorite(currentSong.id)}
+                size={16}
+                className="w-full h-full text-white fill-white"
+              />
+            </div>
           </div>
         </div>
 

@@ -6,15 +6,18 @@ import { invoke } from '@tauri-apps/api/core';
 import {
   Settings2, FolderOpen, Music2, Palette, Radio,
   MessageSquare, Info, X, Eye, EyeOff, FolderPlus,
-  RefreshCw, Trash2, ExternalLink, Check
+  RefreshCw, Trash2, ExternalLink, Check, AlertTriangle, RotateCcw,
+  HelpCircle, Bug, Lightbulb, GitBranch, Copy
 } from 'lucide-react';
 import { useSettingsStore } from '../store/settingsStore';
 import { useLibraryStore } from '../store/libraryStore';
 import { useUiStore } from '../store/uiStore';
 import { usePlayerStore } from '../store/playerStore';
 import { applyAccentColor } from '../utils/colorExtractor';
+import { FEEDBACK_CONFIG } from '../config/feedback';
+import { toast } from '../store/toastStore';
 
-type SettingsCategory = 'general' | 'library' | 'playback' | 'appearance' | 'lastfm' | 'discord' | 'about';
+type SettingsCategory = 'general' | 'library' | 'playback' | 'appearance' | 'lastfm' | 'discord' | 'advanced' | 'help' | 'about';
 
 const CATEGORIES: { id: SettingsCategory; label: string; icon: any }[] = [
   { id: 'general', label: 'General', icon: Settings2 },
@@ -23,6 +26,8 @@ const CATEGORIES: { id: SettingsCategory; label: string; icon: any }[] = [
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'lastfm', label: 'Last.fm', icon: Radio },
   { id: 'discord', label: 'Discord', icon: MessageSquare },
+  { id: 'advanced', label: 'Advanced', icon: AlertTriangle },
+  { id: 'help', label: 'Help & Feedback', icon: HelpCircle },
   { id: 'about', label: 'About', icon: Info },
 ];
 
@@ -67,21 +72,31 @@ function GeneralSection() {
   return (
     <div>
       <h2 className="text-xl font-semibold text-white mb-6">General</h2>
-      <SettingRow label="Start minimized" description="Launch Cadence in the system tray">
-        <Toggle checked={startMinimized} onChange={(v) => updateSettings({ startMinimized: v })} />
-      </SettingRow>
-      <SettingRow label="Minimize to tray on close" description="Keep Cadence running when you close the window">
-        <Toggle checked={minimizeToTray} onChange={(v) => updateSettings({ minimizeToTray: v })} />
-      </SettingRow>
-      <SettingRow label="Language">
-        <select
-          value={language}
-          onChange={(e) => updateSettings({ language: e.target.value })}
-          className="bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-1.5 text-sm text-white focus:border-[#7c3aed] focus:outline-none transition-colors appearance-none cursor-pointer"
-        >
-          <option value="en">English</option>
-        </select>
-      </SettingRow>
+      <div className="relative">
+        <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[3px] bg-[#0c0c0c]/40 rounded-xl">
+          <div className="px-6 py-3 rounded-full bg-[#1f1f1f]/80 border border-[#2a2a2a] shadow-xl backdrop-blur-md">
+            <span className="text-sm font-bold text-white tracking-widest uppercase">Coming Soon</span>
+          </div>
+        </div>
+
+        <div className="opacity-40 pointer-events-none select-none pb-4">
+          <SettingRow label="Start minimized" description="Launch Cadence in the system tray">
+            <Toggle checked={startMinimized} onChange={(v) => updateSettings({ startMinimized: v })} />
+          </SettingRow>
+          <SettingRow label="Minimize to tray on close" description="Keep Cadence running when you close the window">
+            <Toggle checked={minimizeToTray} onChange={(v) => updateSettings({ minimizeToTray: v })} />
+          </SettingRow>
+          <SettingRow label="Language">
+            <select
+              value={language}
+              onChange={(e) => updateSettings({ language: e.target.value })}
+              className="bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-1.5 text-sm text-white focus:border-[#7c3aed] focus:outline-none transition-colors appearance-none cursor-pointer"
+            >
+              <option value="en">English</option>
+            </select>
+          </SettingRow>
+        </div>
+      </div>
     </div>
   );
 }
@@ -91,7 +106,6 @@ function LibrarySection() {
   const musicFolders = useSettingsStore((s) => s.musicFolders);
   const removeMusicFolder = useSettingsStore((s) => s.removeMusicFolder);
   const libraryStore = useLibraryStore();
-  const [isClearing, setIsClearing] = useState(false);
   const [isRescanning, setIsRescanning] = useState(false);
 
   const handleAddFolder = async () => {
@@ -117,15 +131,6 @@ function LibrarySection() {
     } finally {
       setIsRescanning(false);
     }
-  };
-
-  const handleClearLibrary = () => {
-    setIsClearing(true);
-  };
-
-  const confirmClear = () => {
-    libraryStore.setSongs([]);
-    setIsClearing(false);
   };
 
   return (
@@ -167,29 +172,7 @@ function LibrarySection() {
           <RefreshCw size={16} className={isRescanning ? 'animate-spin' : ''} />
           {isRescanning ? 'Scanning...' : 'Rescan Library'}
         </button>
-        <button
-          onClick={handleClearLibrary}
-          className="flex items-center gap-2 rounded-lg border border-[#ef4444]/30 px-4 py-2.5 text-sm font-medium text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
-        >
-          <Trash2 size={16} />
-          Clear Library
-        </button>
       </div>
-
-      {/* Clear confirmation */}
-      {isClearing && (
-        <div className="mt-4 rounded-lg border border-[#ef4444]/30 bg-[#ef4444]/5 p-4">
-          <p className="text-sm text-white mb-3">Are you sure? This will remove all songs from your library. Your music files won't be deleted.</p>
-          <div className="flex gap-3">
-            <button onClick={confirmClear} className="rounded-lg bg-[#ef4444] px-4 py-2 text-sm font-medium text-white hover:bg-[#dc2626] transition-colors">
-              Yes, clear it
-            </button>
-            <button onClick={() => setIsClearing(false)} className="rounded-lg border border-[#2a2a2a] px-4 py-2 text-sm font-medium text-white hover:bg-[#1f1f1f] transition-colors">
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -203,27 +186,37 @@ function PlaybackSection() {
   return (
     <div>
       <h2 className="text-xl font-semibold text-white mb-6">Playback</h2>
-      <SettingRow label="Crossfade" description="Smoothly blend between tracks">
-        <Toggle checked={crossfadeEnabled} onChange={(v) => updateSettings({ crossfadeEnabled: v })} />
-      </SettingRow>
-      {crossfadeEnabled && (
-        <div className="pb-4 border-b border-[#1a1a1a]">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#6b6b6b]">Crossfade Duration</span>
-            <span className="text-xs text-[#a3a3a3] tabular-nums">{crossfadeDuration}s</span>
-          </div>
-          <input
-            type="range"
-            min={0} max={12} step={1}
-            value={crossfadeDuration}
-            onChange={(e) => updateSettings({ crossfadeDuration: Number(e.target.value) })}
-            className="w-full accent-[#7c3aed] h-1 cursor-pointer"
-          />
-          <div className="flex justify-between text-[10px] text-[#3a3a3a] mt-1">
-            <span>0s</span><span>6s</span><span>12s</span>
+      <div className="relative mb-6">
+        <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[3px] bg-[#0c0c0c]/40 rounded-xl">
+          <div className="px-6 py-3 rounded-full bg-[#1f1f1f]/80 border border-[#2a2a2a] shadow-xl backdrop-blur-md">
+            <span className="text-sm font-bold text-white tracking-widest uppercase">Coming Soon</span>
           </div>
         </div>
-      )}
+
+        <div className="opacity-40 pointer-events-none select-none pb-2">
+          <SettingRow label="Crossfade" description="Smoothly blend between tracks">
+            <Toggle checked={crossfadeEnabled} onChange={(v) => updateSettings({ crossfadeEnabled: v })} />
+          </SettingRow>
+          {crossfadeEnabled && (
+            <div className="pb-4 border-b border-[#1a1a1a]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-[#6b6b6b]">Crossfade Duration</span>
+                <span className="text-xs text-[#a3a3a3] tabular-nums">{crossfadeDuration}s</span>
+              </div>
+              <input
+                type="range"
+                min={0} max={12} step={1}
+                value={crossfadeDuration}
+                onChange={(e) => updateSettings({ crossfadeDuration: Number(e.target.value) })}
+                className="w-full accent-[#7c3aed] h-1 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-[#3a3a3a] mt-1">
+                <span>0s</span><span>6s</span><span>12s</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       <div className="py-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-white">Default Volume</span>
@@ -270,7 +263,15 @@ function AppearanceSection() {
     <div>
       <h2 className="text-xl font-semibold text-white mb-6">Appearance</h2>
 
-      <div className="mb-8">
+      <div className="relative">
+        <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[3px] bg-[#0c0c0c]/40 rounded-xl">
+          <div className="px-6 py-3 rounded-full bg-[#1f1f1f]/80 border border-[#2a2a2a] shadow-xl backdrop-blur-md">
+            <span className="text-sm font-bold text-white tracking-widest uppercase">Coming Soon</span>
+          </div>
+        </div>
+
+        <div className="opacity-40 pointer-events-none select-none pb-4">
+          <div className="mb-8">
         <span className="text-sm font-medium text-[#a3a3a3] uppercase tracking-wider mb-4 block">Theme</span>
         <div className="flex gap-4">
           {themes.map((t) => (
@@ -342,6 +343,8 @@ function AppearanceSection() {
           </div>
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -531,27 +534,328 @@ function DiscordSection() {
   return (
     <div>
       <h2 className="text-xl font-semibold text-white mb-6">Discord</h2>
-      <SettingRow label="Enable Discord Rich Presence" description="Show what you're listening to on Discord">
-        <Toggle checked={discordRpcEnabled} onChange={handleToggle} />
-      </SettingRow>
-      {discordRpcEnabled && (
-        <div className="mt-2 flex items-center gap-2">
-          {connecting ? (
-            <span className="text-xs text-[#6b6b6b]">Connecting to Discord...</span>
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#16a34a]" />
-              <span className="text-xs text-[#6b6b6b]">Rich Presence active</span>
+      <div className="relative">
+        <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm bg-black/20 rounded-xl">
+          <span className="px-4 py-2 text-sm font-medium text-white bg-black/50 rounded-full border border-white/10 shadow-lg">
+            Coming Soon
+          </span>
+        </div>
+        <div className="opacity-40 pointer-events-none">
+          <SettingRow label="Enable Discord Rich Presence" description="Show what you're listening to on Discord">
+            <Toggle checked={discordRpcEnabled} onChange={handleToggle} />
+          </SettingRow>
+          {discordRpcEnabled && (
+            <div className="mt-2 flex items-center gap-2">
+              {connecting ? (
+                <span className="text-xs text-[#6b6b6b]">Connecting to Discord...</span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#16a34a]" />
+                  <span className="text-xs text-[#6b6b6b]">Rich Presence active</span>
+                </div>
+              )}
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Advanced Section ─────────────────────────────────────────────────────────
+function AdvancedSection() {
+  const libraryStore = useLibraryStore();
+  const settingsStore = useSettingsStore();
+  
+  const [isClearingLibrary, setIsClearingLibrary] = useState(false);
+  const [isFactoryResetMode, setIsFactoryResetMode] = useState(false);
+  const [resetInput, setResetInput] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+
+  const confirmClearLibrary = async () => {
+    await libraryStore.clearLibrary();
+    setIsClearingLibrary(false);
+  };
+
+  const handleResetOnboarding = () => {
+    settingsStore.updateSettings({ hasCompletedOnboarding: false });
+    // Note: React Router / App.tsx will automatically pick this up and show onboarding
+  };
+
+  const executeFactoryReset = async () => {
+    if (resetInput !== 'RESET') return;
+    setIsResetting(true);
+    try {
+      // 1. Wipe backend database & cache
+      await invoke('reset_library_db');
+      await invoke('clear_artwork_cache');
+      
+      // 2. Wipe frontend state and local settings
+      settingsStore.resetSettings();
+      libraryStore.setSongs([]);
+      
+      setResetSuccess(true);
+    } catch (e) {
+      console.error('Factory reset failed:', e);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const doRestart = () => {
+    invoke('restart_app');
+  };
+
+  if (resetSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center py-16">
+        <div className="w-16 h-16 bg-[#16a34a]/10 rounded-full flex items-center justify-center mb-6">
+          <Check className="text-[#16a34a]" size={32} />
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">Factory Reset Complete</h2>
+        <p className="text-[#a3a3a3] mb-8 max-w-md">
+          Cadence has removed all application data and restored default settings.<br/><br/>
+          Your music files were not modified.
+        </p>
+        <button
+          onClick={doRestart}
+          className="rounded-lg bg-[#7c3aed] px-6 py-3 text-sm font-medium text-white hover:bg-[#6d28d9] transition-colors"
+        >
+          Restart Cadence
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold text-white mb-6">Advanced</h2>
+      
+      <SettingRow label="Reset Onboarding" description="Restart the initial setup flow without losing your library data">
+        <button
+          onClick={handleResetOnboarding}
+          className="flex items-center gap-2 rounded-lg border border-[#2a2a2a] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1f1f1f] transition-colors"
+        >
+          <RotateCcw size={16} />
+          Reset Setup
+        </button>
+      </SettingRow>
+
+      <SettingRow label="Reset Library" description="Clear all scanned songs and orphaned artwork from the database. Preserves your settings.">
+        <button
+          onClick={() => setIsClearingLibrary(true)}
+          className="flex items-center gap-2 rounded-lg border border-[#ef4444]/30 px-4 py-2.5 text-sm font-medium text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
+        >
+          <Trash2 size={16} />
+          Clear Library
+        </button>
+      </SettingRow>
+
+      {isClearingLibrary && (
+        <div className="mt-2 mb-6 rounded-lg border border-[#ef4444]/30 bg-[#ef4444]/5 p-4">
+          <p className="text-sm text-white mb-3">Are you sure? This will remove all songs from your library. Your music files won't be deleted.</p>
+          <div className="flex gap-3">
+            <button onClick={confirmClearLibrary} className="rounded-lg bg-[#ef4444] px-4 py-2 text-sm font-medium text-white hover:bg-[#dc2626] transition-colors">
+              Yes, clear it
+            </button>
+            <button onClick={() => setIsClearingLibrary(false)} className="rounded-lg border border-[#2a2a2a] px-4 py-2 text-sm font-medium text-white hover:bg-[#1f1f1f] transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
+
+      {/* Danger Zone */}
+      <div className="mt-12 rounded-xl border border-[#ef4444]/50 bg-[#ef4444]/10 p-6 overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-1 h-full bg-[#ef4444]" />
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle className="text-[#ef4444]" size={24} />
+          <h3 className="text-lg font-bold text-[#ef4444]">Danger Zone</h3>
+        </div>
+        
+        {!isFactoryResetMode ? (
+          <div className="flex items-center justify-between">
+            <div className="mr-6">
+              <span className="text-sm font-medium text-white block mb-1">Factory Reset</span>
+              <p className="text-xs text-[#d4d4d4]">Completely wipe all Cadence data and return to a clean installation state.</p>
+            </div>
+            <button
+              onClick={() => setIsFactoryResetMode(true)}
+              className="shrink-0 rounded-lg bg-[#ef4444] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#dc2626] transition-colors shadow-lg shadow-red-500/20"
+            >
+              Start Factory Reset
+            </button>
+          </div>
+        ) : (
+          <div className="bg-[#111] border border-[#ef4444]/30 p-5 rounded-lg mt-4">
+            <p className="text-sm font-bold text-white mb-3">This action is strictly irreversible. The following data will be permanently removed:</p>
+            <ul className="list-disc pl-5 text-xs text-[#a3a3a3] mb-4 space-y-1">
+              <li>Library data, albums, and artists</li>
+              <li>User-created playlists</li>
+              <li>Playback history and play counts</li>
+              <li>Last.fm login and session data</li>
+              <li>Discord integration preferences</li>
+              <li>Music folder configuration</li>
+              <li>Onboarding state</li>
+              <li>Application settings (Theme, Volume, etc.)</li>
+              <li>Cached album artwork</li>
+            </ul>
+            
+            <p className="text-sm font-bold text-[#ef4444] mb-5">Your music files will NOT be deleted.</p>
+            
+            <div className="flex flex-col gap-2 mb-4">
+              <label className="text-xs font-medium text-white">Type <span className="font-mono text-[#ef4444] select-all bg-[#ef4444]/20 px-1 py-0.5 rounded">RESET</span> to confirm:</label>
+              <input
+                type="text"
+                value={resetInput}
+                onChange={(e) => setResetInput(e.target.value)}
+                placeholder="RESET"
+                className="bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white focus:border-[#ef4444] focus:outline-none transition-colors w-full max-w-[200px]"
+                autoFocus
+              />
+            </div>
+            
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={executeFactoryReset}
+                disabled={resetInput !== 'RESET' || isResetting}
+                className="rounded-lg bg-[#ef4444] px-4 py-2 text-sm font-bold text-white hover:bg-[#dc2626] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isResetting ? 'Wiping Data...' : 'Permanently Delete Data'}
+              </button>
+              <button
+                onClick={() => {
+                  setIsFactoryResetMode(false);
+                  setResetInput('');
+                }}
+                disabled={isResetting}
+                className="rounded-lg border border-[#2a2a2a] px-4 py-2 text-sm font-medium text-white hover:bg-[#1f1f1f] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+// ─── Help & Feedback Section ──────────────────────────────────────────────────
+function HelpAndFeedbackSection() {
+  const theme = useUiStore((s) => s.theme);
+  const isMiniPlayer = useUiStore((s) => s.isMiniPlayer);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+
+  const getDiagnosticsText = () => {
+    const os = navigator.userAgent.includes('Win') ? 'Windows' : navigator.userAgent.includes('Mac') ? 'macOS' : 'Linux';
+    const version = '1.0.0';
+    const buildNumber = '100';
+    const tauriVersion = '2.x';
+    const arch = navigator.userAgent.includes('x64') || navigator.userAgent.includes('Win64') || navigator.userAgent.includes('x86_64') ? 'x64' : 'x86';
+    const currentTheme = theme.charAt(0).toUpperCase() + theme.slice(1);
+    const windowMode = isMiniPlayer ? 'Mini Player' : 'Normal';
+    const timestamp = new Date().toISOString();
+    return `Cadence Version: ${version}\nBuild Number: ${buildNumber}\nTauri Version: ${tauriVersion}\nOperating System: ${os}\nArchitecture: ${arch}\nTheme: ${currentTheme}\nWindow Mode: ${windowMode}\nTimestamp: ${timestamp}`;
+  };
+
+  const handleOpenUrl = async (url: string) => {
+    try {
+      const { open } = await import('@tauri-apps/plugin-shell');
+      await open(url);
+    } catch {
+      window.open(url, '_blank');
+    }
+  };
+
+  const handleCopyDiagnostics = async () => {
+    const textToCopy = getDiagnosticsText();
+    
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      toast.success('Diagnostics copied to clipboard.');
+    } catch (err) {
+      toast.error('Failed to copy diagnostics.');
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold text-white mb-6">Help & Feedback</h2>
+      
+      <SettingRow label="Report a Bug" description="Found an issue? Help improve Cadence by reporting it.">
+        <button
+          onClick={() => handleOpenUrl(FEEDBACK_CONFIG.BUG_REPORT_URL)}
+          className="flex items-center gap-2 rounded-lg border border-[#2a2a2a] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1f1f1f] transition-colors"
+        >
+          <Bug size={16} />
+          Report Bug
+        </button>
+      </SettingRow>
+
+      <SettingRow label="Suggest a Feature" description="Have an idea? Share it and help shape future releases.">
+        <button
+          onClick={() => handleOpenUrl(FEEDBACK_CONFIG.FEATURE_REQUEST_URL)}
+          className="flex items-center gap-2 rounded-lg border border-[#2a2a2a] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1f1f1f] transition-colors"
+        >
+          <Lightbulb size={16} />
+          Suggest Feature
+        </button>
+      </SettingRow>
+
+      <SettingRow label="GitHub Repository" description="View the Cadence source code, releases and updates.">
+        <button
+          onClick={() => handleOpenUrl(FEEDBACK_CONFIG.GITHUB_REPOSITORY_URL)}
+          className="flex items-center gap-2 rounded-lg border border-[#2a2a2a] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1f1f1f] transition-colors"
+        >
+          <GitBranch size={16} />
+          View on GitHub
+        </button>
+      </SettingRow>
+
+      <div className="mt-8 pt-6 border-t border-[#1a1a1a]">
+        <SettingRow label="Diagnostics" description="View or copy diagnostic information.">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowDiagnostics(!showDiagnostics)}
+              className="flex items-center gap-2 rounded-lg border border-[#2a2a2a] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1f1f1f] transition-colors"
+            >
+              {showDiagnostics ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showDiagnostics ? 'Hide Diagnostics' : 'Show Diagnostics'}
+            </button>
+            <button
+              onClick={handleCopyDiagnostics}
+              className="flex items-center gap-2 rounded-lg bg-[#7c3aed] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#6d28d9] transition-colors shadow-[0_4px_14px_rgba(124,58,237,0.2)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.3)]"
+            >
+              <Copy size={16} />
+              Copy
+            </button>
+          </div>
+        </SettingRow>
+
+        {showDiagnostics && (
+          <div className="mt-4 p-4 rounded-lg bg-[#111111] border border-[#2a2a2a] overflow-x-auto">
+            <pre className="text-xs text-[#a3a3a3] font-mono whitespace-pre-wrap leading-relaxed">{getDiagnosticsText()}</pre>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 // ─── About Section ──────────────────────────────────────────────────────────
 function AboutSection() {
+  const handleOpenUrl = async (url: string) => {
+    try {
+      const { open } = await import('@tauri-apps/plugin-shell');
+      await open(url);
+    } catch {
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <div>
       <h2 className="text-xl font-semibold text-white mb-6">About</h2>
@@ -577,14 +881,20 @@ function AboutSection() {
         <div className="rounded-xl bg-[#1a1a1a] p-4">
           <span className="text-xs font-medium text-[#a3a3a3] uppercase tracking-wider block mb-3">Links</span>
           <div className="flex gap-3">
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-[#a78bfa] hover:text-[#c4b5fd] transition-colors">
+            <button 
+              onClick={() => handleOpenUrl(FEEDBACK_CONFIG.GITHUB_REPOSITORY_URL)} 
+              className="flex items-center gap-2 text-sm text-[#a78bfa] hover:text-[#c4b5fd] transition-colors"
+            >
               <ExternalLink size={14} />
               GitHub
-            </a>
-            <a href="https://github.com/issues" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-[#a78bfa] hover:text-[#c4b5fd] transition-colors">
+            </button>
+            <button 
+              onClick={() => handleOpenUrl(FEEDBACK_CONFIG.BUG_REPORT_URL)} 
+              className="flex items-center gap-2 text-sm text-[#a78bfa] hover:text-[#c4b5fd] transition-colors"
+            >
               <ExternalLink size={14} />
               Report a Bug
-            </a>
+            </button>
           </div>
         </div>
 
@@ -608,6 +918,8 @@ export default function Settings() {
       case 'appearance': return <AppearanceSection />;
       case 'lastfm': return <LastFmSection />;
       case 'discord': return <DiscordSection />;
+      case 'advanced': return <AdvancedSection />;
+      case 'help': return <HelpAndFeedbackSection />;
       case 'about': return <AboutSection />;
     }
   };
